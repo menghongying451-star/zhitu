@@ -1,0 +1,21 @@
+# 环境变量与密钥：绝不提交
+.env
+.env.*
+!.env.example
+
+# 依赖与构建产物
+node_modules/
+dist/
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# 运行时数据
+backend/media/
+backend/logs/*.log
+*.sqlite3
+
+# 系统与编辑器
+.DS_Store
+.idea/

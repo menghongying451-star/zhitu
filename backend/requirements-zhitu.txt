@@ -1,0 +1,23 @@
+# 知途后端精简依赖（已在全新虚拟环境中验证可用；原 requirements.txt 含 Windows 专用包，不要用）
+Django==5.1.7
+djangorestframework==3.15.2
+djangorestframework_simplejwt==5.5.0
+django-cors-headers==4.7.0
+django-filter==25.1
+django-redis==5.4.0
+django-celery-beat==2.8.1
+celery==5.5.1
+channels==4.2.2
+channels_redis==4.2.1
+PyMySQL==1.1.1
+cryptography>=44.0
+python-dotenv==1.0.1
+pytz==2025.1
+python-dateutil==2.9.0.post0
+requests>=2.32
+Pillow>=11.1
+openpyxl==3.1.5
+PyMuPDF>=1.25.4
+python-docx==1.1.2
+pymilvus>=2.4
+openai==1.65.4

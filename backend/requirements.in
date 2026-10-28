@@ -1,0 +1,95 @@
+# ============================================
+# Django 智慧项目依赖配置文件
+# ============================================
+# 使用 pip-tools 管理依赖:
+# pip install pip-tools
+# pip-compile requirements.in
+# pip-sync requirements.txt
+# ============================================
+
+# Django 核心框架
+Django==5.1.7
+djangorestframework==3.15.2
+drf-yasg==1.21.9  # API 文档生成
+
+# 认证和权限
+djangorestframework-simplejwt==5.5.0
+PyJWT==2.9.0
+
+# 跨域处理
+django-cors-headers==4.7.0
+
+# 数据库
+mysqlclient==2.2.7
+PyMySQL==1.1.1  # 备用MySQL驱动
+
+# 缓存和会话
+django-redis==5.4.0
+redis==5.2.1
+
+# 异步任务队列
+celery==5.5.1
+kombu==5.5.2  # Celery消息传递
+
+# 环境变量管理
+python-dotenv==1.0.1
+
+# 密码和安全
+argon2-cffi==23.1.0
+cryptography==44.0.2
+
+# 时间处理
+pytz==2025.1
+python-dateutil==2.9.0.post0
+
+# 文件和媒体处理
+Pillow==11.1.0  # 图像处理
+PyMuPDF==1.25.4  # PDF处理
+openpyxl==3.1.5  # Excel文件
+python-docx==1.1.2  # Word文档
+openai>=1.65.4  # 智能体大模型调用（OpenAI 兼容协议）
+
+# 向量数据库 (Milvus)
+pymilvus==2.4.0
+
+# AI/ML相关
+torch==2.7.0
+transformers==4.52.3
+tokenizers==0.21.1
+safetensors==0.5.3
+huggingface-hub==0.32.0
+jieba==0.42.1  # 中文分词
+
+# 科学计算
+numpy==2.2.5
+pandas==2.2.3
+scipy==1.15.3
+scikit-learn==1.6.1
+
+# HTTP 客户端
+requests==2.32.3
+httpx==0.28.1
+
+# WebSocket和异步支持
+channels==4.2.2
+channels-redis==4.2.1
+aiohttp==3.12.15
+
+# 生产环境服务器
+gunicorn==23.0.0
+daphne==4.1.2
+
+# 开发和测试工具
+pytest==8.3.5
+pytest-cov==6.1.1
+pytest-django==4.9.0  # Django测试支持
+
+# 代码质量和调试
+bandit==1.8.3  # 安全检查
+colorama==0.4.6  # 彩色输出
+
+# 数据导入导出
+django-import-export==4.2.0
+
+# 富文本编辑器
+django-ckeditor-5==0.2.17

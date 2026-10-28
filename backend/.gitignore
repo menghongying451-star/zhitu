@@ -1,0 +1,51 @@
+# Python
+*.py[cod]
+__pycache__/
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+bin/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+
+# Django
+*.log
+*.pot
+*.pyc
+local_settings.py
+db.sqlite3
+media/
+static/
+
+# Django migrations 需要提交到仓库（知途已重新生成一套干净的迁移）
+
+# Virtual Environment
+venv/
+env/
+.env/
+.env
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.idea/misc.xml
+.idea/Project_Zhihui.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# user define
+spots_pictures/
+*.zip
