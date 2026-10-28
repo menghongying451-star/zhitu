@@ -1,5 +1,5 @@
 <script setup>
-import DashBoard from '@/views/DashBoard.vue'
+// 知途 v0 首页：Hero + 行动召唤 + 页脚
 </script>
 
 <template>
@@ -11,23 +11,8 @@ import DashBoard from '@/views/DashBoard.vue'
       <!-- 英雄区域 -->
       <HeroSection />
 
-      <!-- 统计面板 -->
-      <DashBoard />
-
-      <!-- 功能特色区域 -->
-      <FeaturesSection />
-
-      <!-- 核心模块区域 -->
-      <ModulesSection />
-
-      <!-- 服务对象区域 -->
-      <ServicesSection />
-
-      <!-- 成功案例区域 -->
-      <!-- <CasesSection /> -->
-
-      <!-- 常见问题区域 -->
-      <FAQSection />
+      <!-- v0 精简：以下智汇原有的介绍板块暂时隐藏，v1 按调研结果重新设计 -->
+      <!-- <DashBoard /> <FeaturesSection /> <ModulesSection /> <ServicesSection /> <FAQSection /> -->
 
       <!-- 行动召唤区域 -->
       <CTASection />

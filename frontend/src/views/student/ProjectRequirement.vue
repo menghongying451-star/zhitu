@@ -4,7 +4,7 @@
       <AgentChat agent="zhitu" :min-height="600" @action="onAgentAction" />
     </section>
 
-    <h2 class="page-title">需求总览</h2>
+    <h2 class="page-title">机会总览</h2>
 
     <!-- 合并后的筛选栏：单一标签输入 + 创建时间 + 操作 -->
     <div class="filters">
@@ -236,7 +236,7 @@
 
           <div class="drawer-actions">
             <button class="btn btn-primary drawer-join-btn" @click="joinRequirement">
-              {{ isJoined(detail.id) ? '已加入需求' : '加入需求' }}
+              {{ isJoined(detail.id) ? '已收藏' : '收藏' }}
             </button>
           </div>
         </div>
@@ -708,12 +708,12 @@ async function joinRequirement() {
   try {
     await followDemand(requirementId)
     followStatusMap[requirementId] = true
-    ElMessage.success('已加入需求，可在“需求关注”页面查看详情')
+    ElMessage.success('已收藏，可在「我的收藏」中查看')
     detailVisible.value = false
     setTimeout(() => router.push('/student/demand-following'), 600)
   } catch (e) {
     console.error(e)
-    ElMessage.error(e?.message || '加入需求失败')
+    ElMessage.error(e?.message || '收藏失败')
   }
 }
 
@@ -736,11 +736,11 @@ async function openDetail(item) {
 }
 // === 替换 openDetail 函数 END ===
 
-// 智能体（知途）把项目归档到「我要揭榜」后，同步列表里的关注状态
+// 智能体（知途）把机会收藏后，同步列表里的关注状态
 function onAgentAction({ name, data }) {
   if (name === 'requirement_favorited' && data?.requirement_id) {
     followStatusMap[data.requirement_id] = true
-    ElMessage.success('已加入「我要揭榜」')
+    ElMessage.success('已加入「我的收藏」')
   }
 }
 

@@ -12,7 +12,10 @@ venv/
 .venv/
 
 # 运行时数据
-backend/media/
+backend/media/*
+!backend/media/avatars/
+backend/media/avatars/*
+!backend/media/avatars/default/
 backend/logs/*.log
 *.sqlite3
 

@@ -215,7 +215,7 @@ onUnmounted(() => {
       <!-- Logo 头部 -->
       <div class="sidebar-header">
         <div class="logo-container" v-if="!isCollapsed">
-          <span class="logo-text">智汇</span>
+          <span class="logo-text">知途</span>
           <span class="logo-subtitle">企业版</span>
         </div>
 

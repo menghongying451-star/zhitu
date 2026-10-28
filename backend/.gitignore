@@ -22,7 +22,10 @@ lib64/
 *.pyc
 local_settings.py
 db.sqlite3
-media/
+media/*
+!media/avatars/
+media/avatars/*
+!media/avatars/default/
 static/
 
 # Django migrations 需要提交到仓库（知途已重新生成一套干净的迁移）

@@ -1039,16 +1039,16 @@ watch(
             <div class="logo-icon">
               <el-icon><OfficeBuilding /></el-icon>
             </div>
-            <h1 class="brand-title">智汇</h1>
+            <h1 class="brand-title">知途</h1>
           </div>
-          <p class="brand-subtitle">连接产业需求，培育创新人才，共创校企合作新未来</p>
+          <p class="brand-subtitle">知其途，行其路：找到属于你的实践方向</p>
         </div>
 
         <!-- 主要内容 -->
         <div class="brand-content">
-          <h2 class="brand-headline">赋能教育<br />驱动创新</h2>
+          <h2 class="brand-headline">知其途<br />行其路</h2>
           <p class="brand-description">
-            智汇平台是实践育人、培养创新人才的重要平台，构建四区融合的协同育人体系，促进人才培养与产业发展的深度融合。
+            知途通过对话帮你理清兴趣和能力，从企业项目、实验室课题、大创和竞赛中推荐适合你的实践机会。
           </p>
 
           <!-- 合作优势 -->
@@ -1058,8 +1058,8 @@ watch(
                 <el-icon><School /></el-icon>
               </div>
               <div class="feature-content">
-                <h3 class="feature-title">实践育人平台</h3>
-                <p class="feature-description">打造培养创新人才的实践平台，实现产教深度融合</p>
+                <h3 class="feature-title">对话式方向测定</h3>
+                <p class="feature-description">不用填表，说说你感兴趣什么、会什么就能开始</p>
               </div>
             </div>
 
@@ -1068,9 +1068,9 @@ watch(
                 <el-icon><OfficeBuilding /></el-icon>
               </div>
               <div class="feature-content">
-                <h3 class="feature-title">四区融合模式</h3>
+                <h3 class="feature-title">机会集中推荐</h3>
                 <p class="feature-description">
-                  整合校区、园区、社区、城区资源，构建协同育人生态体系
+                  企业项目、实验室课题、大创和竞赛，按你的方向集中推荐
                 </p>
               </div>
             </div>
@@ -1080,10 +1080,8 @@ watch(
                 <el-icon><Promotion /></el-icon>
               </div>
               <div class="feature-content">
-                <h3 class="feature-title">人才培养体系</h3>
-                <p class="feature-description">
-                  通过校企合作项目，培养符合产业需求的高素质创新型人才
-                </p>
+                <h3 class="feature-title">随问随答</h3>
+                <p class="feature-description">对感兴趣的机会，直接追问要求、时间和所需能力</p>
               </div>
             </div>
           </div>
@@ -1091,7 +1089,7 @@ watch(
 
         <!-- 底部信息 -->
         <div class="brand-footer">
-          <p class="copyright">© 2025 智汇校企合作平台 版权所有</p>
+          <p class="copyright">© 2026 知途团队</p>
         </div>
       </div>
 
@@ -1103,7 +1101,7 @@ watch(
             <div class="mobile-logo">
               <el-icon><OfficeBuilding /></el-icon>
             </div>
-            <h1 class="mobile-title">智汇</h1>
+            <h1 class="mobile-title">知途</h1>
           </div>
 
           <!-- 表单切换器 -->
@@ -1127,7 +1125,7 @@ watch(
           <!-- 登录表单 -->
           <div v-if="isLoginForm && !isForgotPasswordForm" class="form-content">
             <h2 class="form-title">欢迎回来</h2>
-            <p class="form-subtitle">请输入您的账号信息登录智汇平台</p>
+            <p class="form-subtitle">请输入您的账号信息登录知途</p>
 
             <form @submit.prevent="handleLogin" class="auth-form">
               <!-- 密码登录 -->
@@ -1472,7 +1470,7 @@ watch(
           <!-- 注册表单 -->
           <div v-else-if="!isLoginForm && !isForgotPasswordForm" class="form-content">
             <h2 class="form-title">创建账号</h2>
-            <p class="form-subtitle">填写以下信息注册智汇平台账号，开启校企合作之旅</p>
+            <p class="form-subtitle">填写以下信息注册知途账号，开始寻找你的实践方向</p>
 
             <form @submit.prevent="handleRegister" class="auth-form">
               <!-- 用户类型 -->
@@ -2151,7 +2149,7 @@ watch(
           <a href="#" class="footer-link">隐私政策</a>
           <a href="#" class="footer-link">用户协议</a>
         </div> -->
-        <p class="footer-copyright">© 2025 智汇校企合作平台 版权所有</p>
+        <p class="footer-copyright">© 2026 知途团队</p>
       </div>
     </footer>
 

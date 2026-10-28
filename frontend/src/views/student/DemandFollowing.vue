@@ -427,7 +427,7 @@ function mapFollowedItem(raw) {
     publisherLogin: `company_${raw.publish_people || raw.publisher || ''}`,
     domain: raw.field || raw.domain || '未分类',
     deadline: raw.finish_time || raw.deadline || '待定',
-    budget: raw.budget || '面议',
+    budget: raw.budget || '—',
     tags: tagNames,
     briefDescription:
       raw.brief || raw.summary || (raw.description ? String(raw.description).slice(0, 100) : ''),
@@ -715,10 +715,10 @@ const confirmUnfollow = async () => {
         selectedDemandId.value = followedDemands.value[start]?.id || null
       }
     }
-    ElMessage.success('已取消关注该需求')
+    ElMessage.success('已取消收藏')
   } catch (e) {
     console.error(e)
-    ElMessage.error(e?.message || '取消关注失败')
+    ElMessage.error(e?.message || '取消收藏失败')
   } finally {
     unfollowConfirmVisible.value = false
   }
@@ -758,12 +758,15 @@ const getProjectAffiliation = (project) => {
 
 /* 导航 */
 const activeTab = ref('overview')
+// 知途 v0：只保留机会简介和智能体问答；资料、组队、结果发布 v1 再按调研决定
 const navs = [
-  { key: 'overview', title: '需求简介', desc: '名称 · 标签 · 简介 · 详情', icon: Document },
+  { key: 'overview', title: '机会简介', desc: '名称 · 标签 · 简介 · 详情', icon: Document },
+  { key: 'ai', title: '智能体问答', desc: '问我这个机会的细节', icon: ChatSquare }
+]
+const _hiddenNavs = [
   { key: 'resources', title: '了解更多', desc: '需求相关资料', icon: FolderOpened },
   { key: 'teams', title: '揭榜立项', desc: '揭榜立项 / 加入 / 查看队伍', icon: Collection },
-  { key: 'results', title: '结果发布', desc: '排名 · 奖项 · 分数', icon: Document },
-  { key: 'ai', title: '智能体问答', desc: '问我需求细节', icon: ChatSquare }
+  { key: 'results', title: '结果发布', desc: '排名 · 奖项 · 分数', icon: Document }
 ]
 const getTagClass = (t) => {
   if (!t) return ''
@@ -1520,10 +1523,8 @@ onMounted(async () => {
 <template>
   <div class="demand-following">
     <header class="page-header">
-      <div class="title">需求关注</div>
-      <div class="sub">
-        从下方卡片中选择一个你已关注的企业需求，查看介绍、在项目组队中揭榜立项加入项目、在企业资源查看资料，或在结果发布查看企业公布的排名。
-      </div>
+      <div class="title">我的收藏</div>
+      <div class="sub">从下方卡片中选择一个你收藏的机会，查看介绍，或向智能体追问细节。</div>
     </header>
 
     <section class="follow-cards" v-if="followedDemands.length">
@@ -1548,7 +1549,7 @@ onMounted(async () => {
                 class="unfollow-btn"
                 @click.stop="openUnfollowConfirm(d)"
               >
-                取消关注
+                取消收藏
               </el-button>
             </div>
           </div>
@@ -1580,7 +1581,7 @@ onMounted(async () => {
 
     <el-empty
       v-if="!selectedDemand && !loading && !followedDemands.length"
-      description="暂无关注的需求，请先在需求总览页面点击加入需求"
+      description="还没有收藏的机会，去「找机会」页面和知途聊聊吧"
     />
     <div v-if="loading" class="loading">加载中...</div>
 
@@ -1600,10 +1601,10 @@ onMounted(async () => {
 
       <el-tabs v-model="activeTab" type="card" class="hidden-tabs-header">
         <!-- 需求介绍 -->
-        <el-tab-pane label="需求简介" name="overview">
+        <el-tab-pane label="机会简介" name="overview">
           <section class="card">
             <div class="card-hd">
-              <div class="title2">需求简介</div>
+              <div class="title2">机会简介</div>
             </div>
             <div class="grid">
               <div class="field">
@@ -1984,13 +1985,13 @@ onMounted(async () => {
     <!-- 取消关注确认 -->
     <el-dialog
       v-model="unfollowConfirmVisible"
-      :title="unfollowTarget ? '取消关注确认 - ' + unfollowTarget.title : '取消关注确认'"
+      :title="unfollowTarget ? '取消收藏 - ' + unfollowTarget.title : '取消收藏'"
       width="640px"
       :close-on-click-modal="false"
       class="unfollow-confirm-dialog"
     >
       <div v-if="unfollowTarget" class="confirm-body">
-        <div class="hint">取消后，该需求将从需求关注列表移除。已加入/创建的项目不受影响。</div>
+        <div class="hint">取消后，该机会将从「我的收藏」中移除。</div>
         <div class="grid">
           <div class="field">
             <div class="label">发布人</div>
