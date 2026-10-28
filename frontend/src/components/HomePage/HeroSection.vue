@@ -10,24 +10,20 @@
       <div class="hero-content">
         <div class="hero-text">
           <div class="hero-badge">
-            <span>基于大模型的产教融合平台</span>
+            <span>基于大模型智能体的校园实践机会导航</span>
           </div>
           <h1 class="hero-title">
-            连接产业需求<br />
-            <span class="gradient-text">培育创新人才</span>
+            不知道往哪走？<br />
+            <span class="gradient-text">知途陪你找到路</span>
           </h1>
           <p class="hero-description">
-            智汇平台依托大模型技术，构建多模态融合供需对接系统与智慧问答系统，打破产教壁垒，实现精准人才培养。
+            和知途聊几句，说说你感兴趣什么、会什么，它会帮你理清实践方向，并从企业项目、实验室课题、大创和竞赛中推荐适合你的机会。
           </p>
 
           <div class="hero-actions">
             <a @click="handleIntroClick" class="primary-btn">
-              <span>了解平台</span>
+              <span>开始测定方向</span>
               <font-awesome-icon :icon="['fas', 'arrow-right']" />
-            </a>
-            <a @click="handleDemoClick" class="secondary-btn">
-              <font-awesome-icon :icon="['fas', 'play-circle']" />
-              <span>观看演示</span>
             </a>
           </div>
 
@@ -51,10 +47,10 @@
         <div class="hero-image">
           <div class="image-decoration"></div>
           <div class="main-image">
-            <img src="/picture/3-800x600.jpg" alt="智汇平台界面展示" />
+            <img src="/picture/3-800x600.jpg" alt="知途" />
             <div class="image-overlay">
-              <h3>多模态供需对接系统</h3>
-              <p>基于大模型的智能匹配技术，实现企业需求与学生能力的精准对接</p>
+              <h3>对话式方向测定</h3>
+              <p>不用填表，聊几句就能匹配到适合你的领域、能力和实践机会</p>
             </div>
           </div>
 
@@ -86,8 +82,8 @@
               <font-awesome-icon :icon="['fas', 'magic-wand-sparkles']" />
             </div>
             <div class="card-content">
-              <p class="card-label">智能推荐</p>
-              <p class="card-value primary">精准匹配</p>
+              <p class="card-label">方向测定</p>
+              <p class="card-value primary">聊几句就够</p>
             </div>
           </div>
 
@@ -96,8 +92,8 @@
               <font-awesome-icon :icon="['fas', 'handshake']" />
             </div>
             <div class="card-content">
-              <p class="card-label">产教合作</p>
-              <p class="card-value secondary">深度融合</p>
+              <p class="card-label">机会来源</p>
+              <p class="card-value secondary">竞赛 · 课题 · 实习</p>
             </div>
           </div>
         </div>
@@ -121,34 +117,34 @@
 
       <!-- 替代方案：平台优势展示 -->
       <div class="platform-advantages">
-        <p class="advantages-title">构建未来教育新生态</p>
+        <p class="advantages-title">知途能帮你做什么</p>
         <div class="advantages-grid">
           <div class="advantage-item">
             <font-awesome-icon :icon="['fas', 'microchip']" class="advantage-icon" />
             <div class="text-content">
-              <h4>大模型驱动</h4>
-              <p>前沿AI技术支撑</p>
+              <h4>理清方向</h4>
+              <p>从兴趣和能力出发</p>
             </div>
           </div>
           <div class="advantage-item">
             <font-awesome-icon :icon="['fas', 'sitemap']" class="advantage-icon" />
             <div class="text-content">
-              <h4>多模态融合</h4>
-              <p>全方位信息整合</p>
+              <h4>集中机会</h4>
+              <p>不再翻遍各个群</p>
             </div>
           </div>
           <div class="advantage-item">
             <font-awesome-icon :icon="['fas', 'lightbulb']" class="advantage-icon" />
             <div class="text-content">
-              <h4>创新驱动</h4>
-              <p>突破传统教育模式</p>
+              <h4>看懂要求</h4>
+              <p>随时追问机会细节</p>
             </div>
           </div>
           <div class="advantage-item">
             <font-awesome-icon :icon="['fas', 'bullseye']" class="advantage-icon" />
             <div class="text-content">
-              <h4>精准对接</h4>
-              <p>供需智能匹配</p>
+              <h4>一键收藏</h4>
+              <p>感兴趣的先存下来</p>
             </div>
           </div>
         </div>
@@ -189,7 +185,7 @@ const router = useRouter()
 
 const handleIntroClick = (event) => {
   event.preventDefault()
-  router.push('/help/introduction')
+  router.push('/student/project-requirement')
 }
 
 const handleDemoClick = (event) => {

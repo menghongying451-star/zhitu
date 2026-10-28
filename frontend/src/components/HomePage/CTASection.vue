@@ -17,9 +17,9 @@ library.add(faArrowRight, faUserPlus, faPlayCircle, faHandshake, faProjectDiagra
 <template>
   <section class="cta-section">
     <div class="container">
-      <h2>加入智汇平台，开启产教融合新篇章</h2>
+      <h2>加入知途，找到属于你的实践方向</h2>
       <p>
-        无论您是学生、企业还是社区，智汇平台都能为您提供量身定制的<br />产教融合解决方案，共同培养创新型工程人才。
+        实习、大创、竞赛、实验室课题，散落在各个群和网站里的机会，<br />知途帮你按兴趣和能力集中推荐。
       </p>
 
       <div class="cta-actions">
@@ -27,10 +27,6 @@ library.add(faArrowRight, faUserPlus, faPlayCircle, faHandshake, faProjectDiagra
           <font-awesome-icon :icon="['fas', 'user-plus']" />
           <span>立即注册</span>
         </router-link>
-        <a href="/help/quick-start" class="cta-secondary-btn">
-          <font-awesome-icon :icon="['fas', 'play-circle']" />
-          <span>观看演示</span>
-        </a>
       </div>
 
       <!-- 原统计数据部分已注释
@@ -54,18 +50,18 @@ library.add(faArrowRight, faUserPlus, faPlayCircle, faHandshake, faProjectDiagra
       <div class="cta-features">
         <div class="cta-feature">
           <font-awesome-icon :icon="['fas', 'graduation-cap']" class="feature-icon" />
-          <h3>人才培养</h3>
-          <p>培养符合企业需求的创新型工程技术与<br />管理人才</p>
+          <h3>方向测定</h3>
+          <p>和智能体聊几句，理清自己的兴趣、能力<br />和适合的方向</p>
         </div>
         <div class="cta-feature">
           <font-awesome-icon :icon="['fas', 'handshake']" class="feature-icon" />
-          <h3>校企合作</h3>
-          <p>搭建企业与院校之间的桥梁，实现深度<br />产教融合</p>
+          <h3>机会推荐</h3>
+          <p>从企业项目、实验室课题、大创和竞赛中<br />推荐适合你的机会</p>
         </div>
         <div class="cta-feature">
           <font-awesome-icon :icon="['fas', 'project-diagram']" class="feature-icon" />
-          <h3>实战项目</h3>
-          <p>提供真实企业项目，让学生在实践中提升专业技能</p>
+          <h3>随问随答</h3>
+          <p>对感兴趣的机会，可以直接追问要求、时间和所需能力</p>
         </div>
       </div>
     </div>

@@ -4,15 +4,15 @@
       <div class="footer-content">
         <div class="footer-brand">
           <div href="#" class="brand-link">
-            <span class="brand-title">智汇</span>
-            <span class="brand-subtitle">产教融合平台</span>
+            <span class="brand-title">知途</span>
+            <span class="brand-subtitle">校园实践机会导航</span>
           </div>
-          <p class="team-info">北京邮电大学智汇团队</p>
+          <p class="team-info">北京邮电大学 · 计算及设计思维课程项目</p>
         </div>
       </div>
 
       <div class="footer-bottom">
-        <p>© 2025 智汇产教融合平台. 保留所有权利.</p>
+        <p>© 2026 知途团队 · 基于智汇平台源码改造</p>
       </div>
     </div>
   </footer>

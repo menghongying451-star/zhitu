@@ -4,28 +4,14 @@
       <div class="navbar-content">
         <div class="navbar-brand">
           <a href="#" class="brand-link">
-            <span class="brand-title">智汇</span>
-            <span class="brand-subtitle">产教融合平台</span>
+            <span class="brand-title">知途</span>
+            <span class="brand-subtitle">校园实践机会导航</span>
           </a>
         </div>
 
         <!-- 桌面导航 -->
         <nav class="desktop-nav">
-          <a href="#dashboard" @click.prevent="scrollToSection('#dashboard')" class="nav-link"
-            >数据大屏</a
-          >
-          <a href="#features" @click.prevent="scrollToSection('#features')" class="nav-link"
-            >核心功能</a
-          >
-          <a href="#modules" @click.prevent="scrollToSection('#modules')" class="nav-link"
-            >核心模块</a
-          >
-          <a href="#services" @click.prevent="scrollToSection('#services')" class="nav-link"
-            >服务对象</a
-          >
-          <!-- <a href="#cases" @click.prevent="scrollToSection('#cases')" class="nav-link">成功案例</a> -->
-          <a href="#faq" @click.prevent="scrollToSection('#faq')" class="nav-link">常见问题</a>
-          <a @click.prevent="router.push('/help')" class="nav-link">帮助文档</a>
+          <!-- v0 精简：首页介绍板块已隐藏，导航锚点暂时去掉 -->
         </nav>
 
         <div class="navbar-actions">
@@ -44,25 +30,6 @@
       <!-- 移动端导航菜单 -->
       <div v-show="mobileMenuVisible" class="mobile-menu">
         <div class="mobile-menu-content">
-          <a href="#dashboard" @click.prevent="scrollToSection('#dashboard')" class="nav-link"
-            >数据大屏</a
-          >
-          <a href="#features" @click.prevent="scrollToSection('#features')" class="mobile-nav-link"
-            >核心功能</a
-          >
-          <a href="#modules" @click.prevent="scrollToSection('#modules')" class="mobile-nav-link"
-            >核心模块</a
-          >
-          <a href="#services" @click.prevent="scrollToSection('#services')" class="mobile-nav-link"
-            >服务对象</a
-          >
-          <!-- <a href="#cases" @click.prevent="scrollToSection('#cases')" class="mobile-nav-link"
-            >成功案例</a
-          > -->
-          <a href="#faq" @click.prevent="scrollToSection('#faq')" class="mobile-nav-link"
-            >常见问题</a
-          >
-          <a @click.prevent="router.push('/help')" class="mobile-nav-link">帮助文档</a>
           <div class="mobile-actions">
             <router-link to="/login" class="mobile-login-btn">登录</router-link>
             <router-link

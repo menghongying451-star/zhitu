@@ -31,6 +31,7 @@ mysql -u root -e "CREATE DATABASE zhitu DEFAULT CHARSET utf8mb4;"
 cp .env.example .env    # 然后编辑 .env，见下方「必填配置」
 python manage.py migrate
 python manage.py loaddata tags          # 导入 194 个领域标签 + 708 个岗位标签
+python manage.py seed_opportunities     # 导入种子机会（agent/fixtures/ 下的 json 和 csv）
 python manage.py createsuperuser        # 管理后台账号
 python manage.py runserver 0.0.0.0:8000
 ```

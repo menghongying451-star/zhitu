@@ -40,11 +40,10 @@ const toggleMobileMenu = () => {
 }
 
 // 菜单顺序（自上而下）：企业需求总览 → 需求关注 → 我的项目
+// 知途 v0：只保留找机会、我的收藏、个人设置；我的项目、通知中心 v1 再按调研决定是否保留
 const menuItems = [
-  { path: '/student/project-requirement', icon: Document, label: '需求总览' },
-  { path: '/student/demand-following', icon: StarFilled, label: '我要揭榜' },
-  { path: '/student/my-projects', icon: Document, label: '我的项目' },
-  { path: '/student/notification-center', icon: Bell, label: '通知中心' },
+  { path: '/student/project-requirement', icon: Document, label: '找机会' },
+  { path: '/student/demand-following', icon: StarFilled, label: '我的收藏' },
   { path: '/student/settings', icon: Setting, label: '个人设置' }
 ]
 
@@ -185,7 +184,7 @@ onUnmounted(() => {
       <!-- Logo 头部 -->
       <div class="sidebar-header">
         <div class="logo-container" v-if="!isCollapsed">
-          <span class="logo-text">智汇</span>
+          <span class="logo-text">知途</span>
           <span class="logo-subtitle">学生端</span>
         </div>
         <button class="desktop-collapse-btn" @click="toggleSidebar">

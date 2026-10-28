@@ -751,7 +751,7 @@ onMounted(async () => {
       <footer class="footer">
         <div class="footer-container">
           <div class="footer-left">
-            <div class="footer-text">© 2025 智汇校企合作平台 版权所有</div>
+            <div class="footer-text">© 2026 知途团队</div>
           </div>
         </div>
       </footer>
