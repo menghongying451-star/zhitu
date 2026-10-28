@@ -166,6 +166,19 @@ class AgentFlowTests(TestCase):
         r4 = self.chat(self.stu_user, "zhitu", "重新测定", conv)
         self.assertIn("重新开始", r4["answer"])
 
+    def test_zhitu_favorite_in_new_session(self):
+        """刷新页面后（新会话、方向测定阶段）直接说「我对XX感兴趣」也能收藏；对不上机会名称时仍当作方向描述。"""
+        from project.models import RequirementFavorite
+
+        req = self._make_requirement()
+        r = self.chat(self.stu_user, "zhitu", "我对校园二手交易小程序开发需求感兴趣")
+        self.assertIn("归档成功", r["answer"])
+        self.assertTrue(RequirementFavorite.objects.filter(student=self.student, requirement=req).exists())
+
+        r2 = self.chat(self.stu_user, "zhitu", "我对大模型应用开发感兴趣")
+        self.assertNotIn("没有找到", r2["answer"])
+        self.assertIn("我已确认", r2["answer"])
+
     # ---- 文识 ----
     def test_wenshi_answer_with_context(self):
         req = self._make_requirement()
