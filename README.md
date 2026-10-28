@@ -65,3 +65,10 @@ npm run dev                         # 打开 http://localhost:5173
 - `.env`、API Key、数据库密码**不提交**（`.gitignore` 已排除）。
 - 每人一个分支，每天合并一次到 `main`。
 - 改了模型（models.py）后执行 `python manage.py makemigrations`，并把生成的迁移文件一起提交。
+
+## 常见问题
+
+- **建账号或登录时报 `No module named 'argon2'`**：执行 `pip install argon2-cffi`（已写进 requirements-zhitu.txt，重新执行 pip install 也可以）。
+- **`npm run dev` 报 `localStorage.getItem is not a function`**：Node 25 的已知问题。要么改用 Node 22 LTS，要么用这条命令启动：`NODE_OPTIONS=--no-experimental-webstorage npm run dev`。
+- **`npm install` 时 husky 报 `.git can't be found`**：已修复，拉取最新的 main 就好。
+- 日志里的 `Milvus ERROR` 可以忽略，v0 没装向量库，智能体会自动改用数据库字段。
