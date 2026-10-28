@@ -88,6 +88,15 @@ class ZhiTuAgent(BaseAgent):
             yield self.say("好的，我们重新开始方向测定。\n\n" + GUIDE_TEXT)
             return
 
+        # 「我对XX感兴趣」：推荐阶段直接收藏；方向测定阶段只有 XX 能对上某个机会名称时才收藏，
+        # 否则（如「我对大模型应用开发感兴趣」）仍当作方向描述。刷新页面后会话回到测定阶段，也能直接收藏。
+        m = RE_FAVORITE.search(q)
+        if m:
+            name = m.group(1).strip()
+            if v["stage"] != "profiling" or self._find_requirement(ctx, name) is not None:
+                yield from self._favorite(ctx, name)
+                return
+
         if v["stage"] == "profiling":
             if "哪些" in q and any(w in q for w in CATEGORY_WORDS):
                 yield from self._list_categories()
@@ -98,11 +107,7 @@ class ZhiTuAgent(BaseAgent):
             else:
                 yield from self._profile(ctx, q)
         else:
-            m = RE_FAVORITE.search(q)
-            if m:
-                yield from self._favorite(ctx, m.group(1).strip())
-            else:
-                yield from self._recommend(ctx, q)
+            yield from self._recommend(ctx, q)
 
     # ------------------------------------------------------------------
     # 第一阶段：方向测定
@@ -119,7 +124,7 @@ class ZhiTuAgent(BaseAgent):
     def _introduce(self, ctx: ChatContext):
         groups = taxonomy.tag2_groups(taxonomy.tag2_list())
         system = (
-            "你是智汇平台的方向引导助手。用户想了解某个领域。请结合下面的平台标签体系，"
+            "你是知途平台的方向引导助手。用户想了解某个领域。请结合下面的平台标签体系，"
             "介绍该领域是做什么的、典型的实践项目方向，以及与之相关的能力/岗位（只从岗位大类表中选，不输出编号）。\n"
             f"【领域列表】{'、'.join(t['name'] for t in taxonomy.tag1_list())}\n"
             f"【岗位大类】{'、'.join(g['post'] for g in groups)}\n\n"
@@ -144,7 +149,7 @@ class ZhiTuAgent(BaseAgent):
                 yield self.say(CONFIRM_TIP)
                 return
             system = (
-                "你是智汇平台的方向引导助手。用户的输入还不足以判断兴趣方向。"
+                "你是知途平台的方向引导助手。用户的输入还不足以判断兴趣方向。"
                 "请简短回应用户的话（可以正常聊天或回答简单问题），然后引导用户描述想做的事情或感兴趣的内容。\n"
                 f"可参考的引导信息：\n{GUIDE_TEXT}\n\n" + tone_instruction(ctx.tone)
             )
@@ -157,7 +162,7 @@ class ZhiTuAgent(BaseAgent):
         names1 = taxonomy.tag1_names(tags["tag1"])
         names2 = taxonomy.tag2_names(tags["tag2"])
         system = (
-            "你是智汇平台的方向引导助手。系统已经根据用户的描述匹配出相关领域和能力/岗位。"
+            "你是知途平台的方向引导助手。系统已经根据用户的描述匹配出相关领域和能力/岗位。"
             "请根据匹配结果，为用户详细介绍他想做的事情：这些领域和能力分别对应需求中的哪些部分、如何组合起来实现，"
             "以及建议提升的方向。不要输出任何编号，回答中不要提及用户是大学生。\n"
             f"【用户描述】\n{desc}\n"
@@ -232,7 +237,7 @@ class ZhiTuAgent(BaseAgent):
             "提到项目时必须使用 <context> 中的准确名称。"
         )
         system = (
-            "# 系统任务\n你是智汇平台的“项目信息参谋”。下面是根据学生方向偏好初筛出的企业真实需求。\n"
+            "# 系统任务\n你是知途平台的“项目信息参谋”。下面是根据学生方向偏好初筛出的校园实践机会（竞赛、项目、实习等）。\n"
             f"{task}\n\n<context>\n{context}\n</context>\n\n"
             + (f"<profile>\n学生个人介绍：{profile}\n</profile>\n\n" if profile else "")
             + f"学生的兴趣描述：{'；'.join(ctx.vars.get('interests') or [])}\n\n"
@@ -241,15 +246,25 @@ class ZhiTuAgent(BaseAgent):
         yield from self.stream_answer(system, ctx, user_content=query, with_history=not first)
         yield self.say(FAVORITE_TIP)
 
+    def _find_requirement(self, ctx: ChatContext, name: str):
+        from project.models import Requirement
+
+        target = _best_title_match(name, self._candidates(ctx))
+        if target is None:  # 候选之外也找一下
+            n = re.sub(r"\s+", "", name)
+            visible = Requirement.objects.filter(status__in=retrieval.STUDENT_VISIBLE_STATUS)
+            others = list(visible.filter(title__icontains=name[:20])[:10])
+            if not others and len(n) >= 4:
+                others = [r for r in visible.only("id", "title")[:500]
+                          if n.lower() in re.sub(r"\s+", "", r.title).lower()][:10]
+            target = _best_title_match(name, others)
+        return target
+
     def _favorite(self, ctx: ChatContext, name: str):
-        from project.models import Requirement, RequirementFavorite
+        from project.models import RequirementFavorite
 
         reqs = self._candidates(ctx)
-        target = _best_title_match(name, reqs)
-        if target is None:  # 候选之外也找一下
-            others = list(Requirement.objects.filter(status__in=retrieval.STUDENT_VISIBLE_STATUS,
-                                                     title__icontains=name[:20])[:5])
-            target = _best_title_match(name, others)
+        target = self._find_requirement(ctx, name)
         if target is None:
             titles = "\n".join(f"- {r.title}" for r in reqs[:10])
             yield self.say(

@@ -18,7 +18,7 @@ class WenShiAgent(BaseAgent):
         "您好，您可以向我询问本项目的需求细节。\n"
         "Tip：您也可以通过左下角上传个人介绍，以便我更了解您。"
     )
-    suggestions = ["这个项目主要做什么？", "需要哪些技能？", "截止时间和人数要求是？", "企业能提供哪些支持？"]
+    suggestions = ["这个项目主要做什么？", "需要哪些技能？", "截止时间和人数要求是？", "发布方能提供哪些支持？"]
     allow_file = True
     file_hint = "上传个人介绍 / 简历（PDF、Word、TXT）"
 
@@ -48,7 +48,7 @@ class WenShiAgent(BaseAgent):
 
         profile = ctx.vars.get("profile")
         system = (
-            "# 系统任务\n你是智汇平台的“项目信息参谋”，帮助学生了解当前这个企业需求，"
+            "# 系统任务\n你是知途平台的“项目信息参谋”，帮助学生了解当前这个企业需求，"
             "并判断自己是否适合揭榜或加入团队。\n\n"
             f"<context>\n{context}\n</context>\n\n"
             + (f"<profile>\n学生个人简介：{profile}\n</profile>\n\n" if profile else "")

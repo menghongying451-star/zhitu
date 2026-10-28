@@ -218,7 +218,7 @@ class TianBaoAgent(BaseAgent):
         yield self.say(
             f"需求「{req.title}」发布成功！当前状态：{status_text}。\n"
             + ("".join(f"\n- {e}" for e in extra) + "\n" if extra else "")
-            + "\n感谢您使用智汇平台，您可以在「需求管理」中查看和编辑该需求，也可以继续上传新的需求文档。"
+            + "\n感谢您使用知途平台，您可以在「需求管理」中查看和编辑该需求，也可以继续上传新的需求文档。"
         )
 
 

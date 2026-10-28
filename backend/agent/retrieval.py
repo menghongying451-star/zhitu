@@ -54,7 +54,7 @@ def requirement_card(req, detail: bool = True) -> str:
         if detail:
             res = [r.title for r in req.resources.all()[:8]]
             if res:
-                lines.append(f"企业提供的资源：{'、'.join(res)}")
+                lines.append(f"发布方提供的资源：{'、'.join(res)}")
     except Exception:  # 关联表异常不影响主流程
         pass
     return "\n".join(lines)
