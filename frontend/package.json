@@ -11,7 +11,7 @@
     "test:e2e": "playwright test",
     "lint": "eslint . --fix",
     "format": "prettier --write src/",
-    "prepare": "husky && husky install",
+    "prepare": "cd .. && husky install frontend/.husky || true",
     "lint-staged": "lint-staged"
   },
   "dependencies": {
