@@ -694,6 +694,13 @@ const selectedDemand = computed(
 )
 const unfollowConfirmVisible = ref(false)
 const unfollowTarget = ref(null)
+
+// 预算没有值时整栏隐藏（映射层会把空值写成 '—'）
+const hasBudgetValue = (v) => {
+  if (v === null || v === undefined) return false
+  const s = String(v).trim()
+  return s !== '' && s !== '-' && s !== '—'
+}
 const openUnfollowConfirm = (d) => {
   unfollowTarget.value = d
   unfollowConfirmVisible.value = true
@@ -1616,7 +1623,7 @@ onMounted(async () => {
                 <div class="value">{{ selectedDemand.publisher }}</div>
               </div>
               <div class="field">
-                <div class="label">发布企业</div>
+                <div class="label">发布方</div>
                 <div class="value">{{ selectedDemand.organizationName || '—' }}</div>
               </div>
 
@@ -1624,7 +1631,7 @@ onMounted(async () => {
                 <div class="label">截止</div>
                 <div class="value">{{ selectedDemand.deadline }}</div>
               </div>
-              <div class="field">
+              <div class="field" v-if="hasBudgetValue(selectedDemand.budget)">
                 <div class="label">预算</div>
                 <div class="value">{{ selectedDemand.budget }}</div>
               </div>
@@ -2237,20 +2244,20 @@ onMounted(async () => {
   gap: 10px;
 }
 .field .label {
-  color: #6b7280;
+  color: #4b5563;
   font-size: 12px;
 }
 .field .value {
   font-weight: 600;
 }
 .desc-box .label {
-  color: #6b7280;
+  color: #4b5563;
   font-size: 12px;
   margin-top: 10px;
 }
 .desc-box .desc {
   margin: 6px 0 0;
-  color: #374151;
+  color: #1f2937;
 }
 .ai-iframe-container {
   width: 100%;

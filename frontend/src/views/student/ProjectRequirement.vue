@@ -178,9 +178,9 @@
               <span class="info-label">发布人</span>
               <span class="info-value">{{ detail.publish_people || '-' }}</span>
             </div>
-            <div class="info-item">
+            <div class="info-item" v-if="hasBudget">
               <span class="info-label">预算</span>
-              <span class="info-value">{{ detail.budget + '万' || '-' }}</span>
+              <span class="info-value">{{ detail.budget }}万</span>
             </div>
             <div class="info-item">
               <span class="info-label">招募人数</span>
@@ -720,6 +720,14 @@ async function joinRequirement() {
 const detail = ref(null)
 const detailVisible = ref(false)
 
+// 预算没有值时整栏隐藏（原写法 detail.budget + '万' 会渲染成 "null万"）
+const hasBudget = computed(() => {
+  const b = detail.value?.budget
+  if (b === null || b === undefined) return false
+  const s = String(b).trim()
+  return s !== '' && s !== '-' && s !== '—'
+})
+
 // === 替换 openDetail 函数 BEGIN ===
 async function openDetail(item) {
   if (!item?.id) return
@@ -1243,7 +1251,7 @@ onMounted(loadList)
   gap: 6px;
 }
 .info-label {
-  color: #6b7280;
+  color: #4b5563;
   min-width: 64px;
 }
 .info-value {
@@ -1256,7 +1264,7 @@ onMounted(loadList)
   margin: 8px 0;
 }
 .group-label {
-  color: #6b7280;
+  color: #4b5563;
   font-size: 12px;
   padding-right: 4px;
 }
@@ -1264,6 +1272,7 @@ onMounted(loadList)
   white-space: pre-wrap;
   line-height: 1.6;
   margin-top: 8px;
+  color: #1f2937;
 }
 .drawer-res {
   margin-top: 12px;
