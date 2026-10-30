@@ -2,14 +2,14 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import {
   Document,
-  Setting,
   Expand,
   Fold,
   Menu,
   Bell,
   Close,
   ArrowDown,
-  StarFilled
+  StarFilled,
+  ChatLineSquare
 } from '@element-plus/icons-vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore, useAuthStore } from '@/stores'
@@ -39,13 +39,19 @@ const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value
 }
 
-// 菜单顺序（自上而下）：企业需求总览 → 需求关注 → 我的项目
-// 知途 v0：只保留找机会、我的收藏、个人设置；我的项目、通知中心 v1 再按调研决定是否保留
+// 菜单顺序（自上而下）：找机会 → 我的收藏 → 历史对话
+// 知途 v0：个人设置入口已从侧边栏移除，改为点击左下角学生头像进入个人中心
 const menuItems = [
   { path: '/student/project-requirement', icon: Document, label: '找机会' },
   { path: '/student/demand-following', icon: StarFilled, label: '我的收藏' },
-  { path: '/student/settings', icon: Setting, label: '个人设置' }
+  { path: '/student/chat-history', icon: ChatLineSquare, label: '历史对话' }
 ]
+
+// 点击左下角学生信息区 → 个人中心
+const goProfileCenter = () => {
+  isMobileMenuOpen.value = false
+  router.push('/student/settings')
+}
 
 const activeMenu = ref(
   route.path.startsWith('/student/') ? route.path : '/student/project-requirement'
@@ -214,9 +220,17 @@ onUnmounted(() => {
           </router-link>
         </nav>
       </div>
-      <!-- 学生信息区 -->
+      <!-- 学生信息区：点击进入个人中心 -->
       <div v-if="!isCollapsed" class="sidebar-footer">
-        <div class="student-info">
+        <div
+          class="student-info"
+          role="button"
+          tabindex="0"
+          title="个人中心"
+          @click="goProfileCenter"
+          @keydown.enter="goProfileCenter"
+          @keydown.space.prevent="goProfileCenter"
+        >
           <el-avatar
             :size="40"
             :src="
@@ -457,6 +471,20 @@ onUnmounted(() => {
   .student-info {
     display: flex;
     align-items: center;
+    cursor: pointer;
+    padding: 6px;
+    margin: -6px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #f7f8fa;
+    }
+
+    &:focus-visible {
+      outline: 2px solid #165dff;
+      outline-offset: 2px;
+    }
 
     .student-avatar {
       margin-right: 12px;

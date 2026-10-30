@@ -46,6 +46,11 @@ const router = createRouter({
           path: 'demand-following',
           component: () => import('@/views/student/DemandFollowing.vue')
         },
+        // 历史对话（当前为纯前端 localStorage 版本）
+        {
+          path: 'chat-history',
+          component: () => import('@/views/student/ChatHistory.vue')
+        },
         {
           path: 'my-projects',
           component: () => import('@/views/student/MyProjects.vue')
