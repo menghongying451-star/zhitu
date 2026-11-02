@@ -521,4 +521,29 @@ onBeforeUnmount(stop)
 button:disabled {
   cursor: not-allowed;
 }
+
+/* 输入框允许在窄屏被压缩，避免撑破容器 */
+.ac-input {
+  min-width: 0;
+}
+
+/* 手机端：收紧头部工具条、气泡与底部输入区 */
+@media (max-width: 480px) {
+  .ac-header {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+  .ac-tone {
+    width: 120px;
+  }
+  .ac-bubble {
+    max-width: 92%;
+  }
+  .ac-footer {
+    padding: 8px;
+  }
+  .ac-send {
+    padding: 0 12px;
+  }
+}
 </style>

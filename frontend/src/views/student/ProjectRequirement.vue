@@ -6,8 +6,26 @@
 
     <h2 class="page-title">机会总览</h2>
 
-    <!-- 合并后的筛选栏：单一标签输入 + 创建时间 + 操作 -->
+    <!-- 筛选栏：关键词（前端过滤）+ 标签 + 创建时间 + 操作 -->
     <div class="filters">
+      <div class="filters-row">
+        <!-- 关键词搜索：纯前端过滤当前列表 -->
+        <div class="field-inline field-grow">
+          <label class="label">关键词</label>
+          <div class="keyword-wrap">
+            <input
+              v-model.trim="keyword"
+              type="text"
+              class="input"
+              placeholder="搜索机会标题、发布方、简介或标签"
+            />
+            <button v-if="keyword" class="keyword-clear" type="button" @click="keyword = ''">
+              清除
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="filters-row">
         <!-- 统一标签输入 -->
         <div class="field-inline field-grow">
@@ -86,8 +104,8 @@
     </div>
 
     <!-- 列表 -->
-    <section class="list" v-if="!loading && list.length">
-      <article v-for="item in list" :key="item.id" class="card" @click="openDetail(item)">
+    <section class="list" v-if="!loading && displayList.length">
+      <article v-for="item in displayList" :key="item.id" class="card" @click="openDetail(item)">
         <div class="card-title">
           <span class="title">{{ item.title }}</span>
           <span class="status" :class="`status--${item.status}`">
@@ -104,6 +122,12 @@
           <span class="sep">·</span>
           <span class="view">浏览：{{ item.views ?? item.view_count ?? 0 }}</span>
         </div>
+        <div class="deadline" :class="{ 'deadline--tbd': !hasDeadline(item) }">
+          <span class="deadline-label">截止</span>
+          <span class="deadline-value">
+            {{ hasDeadline(item) ? formatTime(item.finish_time) : '以官网为准' }}
+          </span>
+        </div>
         <div class="tags">
           <span v-for="t in item.tag1Unified" :key="`t1-${t.name}`" class="tag">{{ t.name }}</span>
           <span v-for="t in item.tag2Unified" :key="`t2-${t.name}`" class="tag tag--sub">
@@ -116,7 +140,9 @@
       </article>
     </section>
 
-    <section v-if="!loading && !list.length" class="empty">暂无数据</section>
+    <section v-if="!loading && !displayList.length" class="empty">
+      {{ list.length ? '没有匹配关键词的机会，换个词试试' : '暂无数据' }}
+    </section>
     <section v-if="loading" class="loading">加载中...</section>
 
     <!-- 分页 -->
@@ -269,6 +295,58 @@ const pagination = reactive({
 const filters = reactive({
   time_start: '',
   time_end: ''
+})
+
+/* ====== 关键词搜索 + 截止时间排序（都在前端做） ====== */
+const keyword = ref('')
+
+// 取截止时间戳；字段缺失/非法返回 null
+function deadlineValue(item) {
+  const raw = item?.finish_time ?? item?.deadline ?? item?.finishTime
+  if (!raw) return null
+  const t = new Date(raw).getTime()
+  return Number.isNaN(t) ? null : t
+}
+
+function hasDeadline(item) {
+  return deadlineValue(item) !== null
+}
+
+// 关键词命中：标题 / 发布方 / 简介 / 标签
+const keywordMatchedList = computed(() => {
+  const kw = keyword.value.trim().toLowerCase()
+  if (!kw) return list.value
+  return list.value.filter((it) => {
+    const hay = [
+      it.title,
+      it.organization?.name,
+      it.company?.name,
+      it.brief,
+      it.summary,
+      it.description,
+      ...(it.tag1Unified || []).map((t) => t.name),
+      ...(it.tag2Unified || []).map((t) => t.name)
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+    return hay.includes(kw)
+  })
+})
+
+// 快截止的排前面；没有截止时间的排最后
+const displayList = computed(() => {
+  const arr = [...keywordMatchedList.value]
+  arr.sort((a, b) => {
+    const ta = deadlineValue(a)
+    const tb = deadlineValue(b)
+    if (ta === null && tb === null) return (b.id || 0) - (a.id || 0)
+    if (ta === null) return 1
+    if (tb === null) return -1
+    if (ta === tb) return (b.id || 0) - (a.id || 0)
+    return ta - tb
+  })
+  return arr
 })
 
 const totalPages = computed(() =>
@@ -803,6 +881,33 @@ onMounted(loadList)
 .field-grow {
   min-width: 0;
 }
+
+/* 关键词搜索框 */
+.keyword-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.keyword-wrap .input {
+  flex: 1;
+  min-width: 0;
+}
+.keyword-clear {
+  flex-shrink: 0;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  border-radius: 8px;
+  color: #4b5563;
+  font-size: 13px;
+  cursor: pointer;
+}
+.keyword-clear:hover {
+  border-color: #9ca3af;
+  color: #111827;
+}
 .label {
   color: #6b7280;
   font-size: 12px;
@@ -1140,6 +1245,36 @@ onMounted(loadList)
 .summary {
   margin-top: 8px;
   color: #4b5563;
+}
+
+/* 截止时间：有值用橙色提醒，没有则写「以官网为准」 */
+.deadline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 2px 10px;
+  border: 1px solid #fed7aa;
+  border-radius: 999px;
+  background: #fff7ed;
+  color: #b45309;
+  font-size: 13px;
+  line-height: 20px;
+}
+.deadline-label {
+  font-size: 12px;
+  color: #9a3412;
+}
+.deadline-value {
+  white-space: nowrap;
+}
+.deadline--tbd {
+  border-color: #e5e7eb;
+  background: #f3f4f6;
+  color: #6b7280;
+}
+.deadline--tbd .deadline-label {
+  color: #6b7280;
 }
 
 /* Pagination & states */

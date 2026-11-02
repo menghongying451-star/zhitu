@@ -34,6 +34,7 @@
   color: #1d2129;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 /* 滚动行为 */

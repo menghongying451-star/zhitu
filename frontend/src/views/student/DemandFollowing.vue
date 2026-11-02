@@ -2084,6 +2084,20 @@ onMounted(async () => {
 /* 原样式保持不变 (略，与之前一致) */
 .demand-following {
   padding: 16px;
+  overflow-x: hidden;
+}
+
+/* 手机端：收紧内边距，避免长文本撑出横向滚动 */
+@media (max-width: 640px) {
+  .demand-following {
+    padding: 12px;
+  }
+  .base-line .item {
+    white-space: normal;
+  }
+  :deep(.el-table) {
+    max-width: 100%;
+  }
 }
 .page-header {
   background: #fff;
