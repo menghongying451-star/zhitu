@@ -13,6 +13,22 @@ export function getAgentMeta(name) {
   return request.get(`/api/v1/agent/${name}/`)
 }
 
+/* ---------- 历史对话 ---------- */
+// 当前用户的会话列表；agent 可选：zhitu / wenshi / tianbao
+export function listConversations(agent) {
+  return request.get('/api/v1/agent/conversations/', { params: agent ? { agent } : {} })
+}
+// 单个会话（含全部消息）
+export function getConversation(id) {
+  return request.get(`/api/v1/agent/conversations/${id}/`)
+}
+export function deleteConversation(id) {
+  return request.delete(`/api/v1/agent/conversations/${id}/`)
+}
+export function clearConversations() {
+  return request.delete('/api/v1/agent/conversations/')
+}
+
 function chatUrl(name) {
   const base = baseURL || `${window.location.origin}/`
   return new URL(`api/v1/agent/${name}/chat/`, base.endsWith('/') ? base : `${base}/`).toString()

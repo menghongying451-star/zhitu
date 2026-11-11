@@ -1,7 +1,12 @@
 <template>
   <div class="page">
     <section class="agent-container">
-      <AgentChat agent="zhitu" :min-height="600" @action="onAgentAction" />
+      <AgentChat
+        agent="zhitu"
+        :min-height="600"
+        :resume-id="String(route.query.conv || '')"
+        @action="onAgentAction"
+      />
     </section>
 
     <h2 class="page-title">机会总览</h2>
@@ -122,8 +127,11 @@
           <span class="sep">·</span>
           <span class="view">浏览：{{ item.views ?? item.view_count ?? 0 }}</span>
         </div>
-        <div class="deadline" :class="{ 'deadline--tbd': !hasDeadline(item) }">
-          <span class="deadline-label">截止</span>
+        <div
+          class="deadline"
+          :class="{ 'deadline--tbd': !hasDeadline(item), 'deadline--expired': isExpired(item) }"
+        >
+          <span class="deadline-label">{{ isExpired(item) ? '已截止' : '截止' }}</span>
           <span class="deadline-value">
             {{ hasDeadline(item) ? formatTime(item.finish_time) : '以官网为准' }}
           </span>
@@ -141,7 +149,7 @@
     </section>
 
     <section v-if="!loading && !displayList.length" class="empty">
-      {{ list.length ? '没有匹配关键词的机会，换个词试试' : '暂无数据' }}
+      {{ keyword ? '没有匹配关键词的机会，换个词试试' : '暂无数据' }}
     </section>
     <section v-if="loading" class="loading">加载中...</section>
 
@@ -273,7 +281,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { getRequirementList, getRequirementDetail } from '@/api/student/requirement'
 import { searchTags } from '@/api/student/tags'
@@ -282,6 +290,7 @@ import { followDemand } from '@/api'
 
 /* ====== 列表与分页 ====== */
 const router = useRouter()
+const route = useRoute()
 const loading = ref(false)
 const list = ref([])
 const followStatusMap = reactive({})
@@ -297,7 +306,7 @@ const filters = reactive({
   time_end: ''
 })
 
-/* ====== 关键词搜索 + 截止时间排序（都在前端做） ====== */
+/* ====== 关键词搜索 + 截止时间排序（交给后端，对全部机会生效，不只是当前页） ====== */
 const keyword = ref('')
 
 // 取截止时间戳；字段缺失/非法返回 null
@@ -312,41 +321,26 @@ function hasDeadline(item) {
   return deadlineValue(item) !== null
 }
 
-// 关键词命中：标题 / 发布方 / 简介 / 标签
-const keywordMatchedList = computed(() => {
-  const kw = keyword.value.trim().toLowerCase()
-  if (!kw) return list.value
-  return list.value.filter((it) => {
-    const hay = [
-      it.title,
-      it.organization?.name,
-      it.company?.name,
-      it.brief,
-      it.summary,
-      it.description,
-      ...(it.tag1Unified || []).map((t) => t.name),
-      ...(it.tag2Unified || []).map((t) => t.name)
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase()
-    return hay.includes(kw)
-  })
-})
+// 截止日期早于今天 = 已截止
+function isExpired(item) {
+  const t = deadlineValue(item)
+  if (t === null) return false
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  return t < today.getTime()
+}
 
-// 快截止的排前面；没有截止时间的排最后
-const displayList = computed(() => {
-  const arr = [...keywordMatchedList.value]
-  arr.sort((a, b) => {
-    const ta = deadlineValue(a)
-    const tb = deadlineValue(b)
-    if (ta === null && tb === null) return (b.id || 0) - (a.id || 0)
-    if (ta === null) return 1
-    if (tb === null) return -1
-    if (ta === tb) return (b.id || 0) - (a.id || 0)
-    return ta - tb
-  })
-  return arr
+// 后端已按「未截止(近→远) → 无截止时间 → 已截止」排好序，这里直接展示
+const displayList = computed(() => list.value)
+
+// 输入关键词后停顿 400ms 自动搜索全部机会
+let keywordTimer = null
+watch(keyword, () => {
+  clearTimeout(keywordTimer)
+  keywordTimer = setTimeout(() => {
+    pagination.page = 1
+    loadList()
+  }, 400)
 })
 
 const totalPages = computed(() =>
@@ -621,8 +615,10 @@ function buildParams() {
 
   const params = {
     page: pagination.page,
-    page_size: pagination.page_size
+    page_size: pagination.page_size,
+    sort_type: 'deadline'
   }
+  if (keyword.value.trim()) params.q = keyword.value.trim()
 
   if (keyword) {
     params.keyword = keyword
@@ -702,6 +698,7 @@ function onSearch() {
 }
 
 function onReset() {
+  keyword.value = ''
   filters.time_start = ''
   filters.time_end = ''
   selectedTags.value = []
@@ -1275,6 +1272,16 @@ onMounted(loadList)
 }
 .deadline--tbd .deadline-label {
   color: #6b7280;
+}
+.deadline--expired {
+  border-color: #e5e7eb;
+  background: #f3f4f6;
+  color: #9ca3af;
+  text-decoration: line-through;
+}
+.deadline--expired .deadline-label {
+  color: #9ca3af;
+  text-decoration: none;
 }
 
 /* Pagination & states */

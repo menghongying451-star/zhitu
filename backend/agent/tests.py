@@ -179,6 +179,68 @@ class AgentFlowTests(TestCase):
         self.assertNotIn("没有找到", r2["answer"])
         self.assertIn("我已确认", r2["answer"])
 
+    # ---- 历史对话 ----
+    def test_conversation_history_saved_and_listed(self):
+        from django.core.cache import cache
+        req = self._make_requirement()
+        r = self.chat(self.stu_user, "zhitu", "我对校园二手交易小程序开发需求感兴趣")
+        conv = r["conversation_id"]
+        self.chat(self.stu_user, "zhitu", "都有哪些大类", conv)
+
+        lst = self.client.get("/api/v1/agent/conversations/").json()
+        self.assertEqual(len(lst), 1)
+        self.assertEqual(lst[0]["id"], conv)
+        self.assertEqual(lst[0]["message_count"], 4)
+        self.assertIn("二手交易", lst[0]["title"])
+
+        d = self.client.get(f"/api/v1/agent/conversations/{conv}/").json()
+        self.assertEqual([m["role"] for m in d["messages"]], ["user", "assistant", "user", "assistant"])
+        self.assertEqual(d["messages"][1]["actions"][0]["name"], "requirement_favorited")
+        self.assertEqual(d["messages"][1]["actions"][0]["data"]["requirement_id"], req.id)
+
+        # 缓存过期后接着聊：上下文从数据库恢复
+        cache.clear()
+        self.chat(self.stu_user, "zhitu", "都有哪些大类", conv)
+        self.assertEqual(self.client.get(f"/api/v1/agent/conversations/{conv}/").json()["message_count"], 6)
+
+        # 别人看不到、删不掉
+        self.client.force_authenticate(self.ent_user)
+        self.assertEqual(self.client.get("/api/v1/agent/conversations/").json(), [])
+        self.assertEqual(self.client.get(f"/api/v1/agent/conversations/{conv}/").status_code, 404)
+        self.assertEqual(self.client.delete(f"/api/v1/agent/conversations/{conv}/").status_code, 404)
+
+        self.client.force_authenticate(self.stu_user)
+        self.assertEqual(self.client.delete(f"/api/v1/agent/conversations/{conv}/").status_code, 204)
+        self.assertEqual(self.client.get("/api/v1/agent/conversations/").json(), [])
+
+    def test_export_chat_logs(self):
+        import csv, os, tempfile
+        from django.core.management import call_command
+        self.chat(self.stu_user, "zhitu", "都有哪些大类")
+        out = os.path.join(tempfile.mkdtemp(), "logs.csv")
+        call_command("export_chat_logs", "-o", out)
+        rows = list(csv.reader(open(out, encoding="utf-8-sig")))
+        self.assertEqual(rows[0][0], "会话ID")
+        self.assertEqual(len(rows), 3)
+
+    # ---- 机会列表：按截止时间排序 + 关键词 ----
+    def test_requirement_list_deadline_sort_and_search(self):
+        import datetime
+        from django.utils import timezone
+        today = timezone.localdate()
+        a = self._make_requirement("已过期的比赛"); a.finish_time = today - datetime.timedelta(days=3); a.save()
+        b = self._make_requirement("没写截止的项目")
+        c = self._make_requirement("下个月截止的实习"); c.finish_time = today + datetime.timedelta(days=30); c.save()
+        d = self._make_requirement("明天截止的竞赛"); d.finish_time = today + datetime.timedelta(days=1); d.save()
+        self.client.force_authenticate(self.stu_user)
+        from django.urls import reverse
+        url = "/api/v1/project/requirement/list/"
+        r = self.client.get(url, {"sort_type": "deadline", "status": "in_progress"})
+        titles = [x["title"] for x in r.json()["data"]["requirements"]]
+        self.assertEqual(titles, ["明天截止的竞赛", "下个月截止的实习", "没写截止的项目", "已过期的比赛"])
+        r2 = self.client.get(url, {"sort_type": "deadline", "q": "实习"})
+        self.assertEqual([x["title"] for x in r2.json()["data"]["requirements"]], ["下个月截止的实习"])
+
     # ---- 文识 ----
     def test_wenshi_answer_with_context(self):
         req = self._make_requirement()

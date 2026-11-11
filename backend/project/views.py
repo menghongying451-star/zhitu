@@ -656,6 +656,27 @@ def list_requirements(request):
             search_q |= Q(tag1__value__icontains=keyword) | Q(tag2__category__icontains=keyword) | Q(tag2__subcategory__icontains=keyword) | Q(tag2__specialty__icontains=keyword)
             queryset = queryset.filter(search_q).distinct()
         
+        # 知途：自由文本搜索（标题 / 简介 / 详情 / 发布方 / 标签），与上面按标签的 keyword 互不影响
+        q_text = (request.GET.get('q') or '').strip()
+        if q_text:
+            text_q = Q()
+            for word in q_text.split():
+                text_q &= (Q(title__icontains=word) | Q(brief__icontains=word) | Q(description__icontains=word)
+                           | Q(organization__name__icontains=word) | Q(tag1__value__icontains=word)
+                           | Q(tag2__post__icontains=word))
+            queryset = queryset.filter(text_q).distinct()
+
+        # 知途：按截止时间排序——未截止的按日期从近到远，没写截止时间的其次，已截止的最后
+        by_deadline = request.GET.get('sort_type') == 'deadline'
+        if by_deadline:
+            from django.db.models import Value
+            today = timezone.localdate()
+            queryset = queryset.annotate(deadline_group=Case(
+                When(finish_time__gte=today, then=Value(0)),
+                When(finish_time__isnull=True, then=Value(1)),
+                default=Value(2), output_field=IntegerField(),
+            )).order_by('deadline_group', 'finish_time', '-created_at')
+
         # 排序处理（针对海量数据优化）
         sort_type = request.GET.get('sort_type', 'time')  # 默认按时间排序
         sort_order = request.GET.get('sort_order', 'down')  # 默认降序
@@ -673,8 +694,9 @@ def list_requirements(request):
         else:
             order_by = f'-{sort_field}'
         
-        # 应用排序，使用数据库索引优化
-        queryset = queryset.order_by(order_by)
+        # 应用排序，使用数据库索引优化（按截止时间排序时上面已排好）
+        if not by_deadline:
+            queryset = queryset.order_by(order_by)
         
         # 使用通用分页工具
         pagination_result = paginate_queryset(request, queryset, default_page_size=10)

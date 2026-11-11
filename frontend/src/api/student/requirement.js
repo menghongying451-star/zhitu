@@ -25,7 +25,9 @@ function sanitizeRequirementParams(raw = {}) {
     'time_end',
     'time', // 兼容后端旧聚合时间字段
     'tag1_ids',
-    'tag2_ids'
+    'tag2_ids',
+    'q',
+    'sort_type'
   ])
   const ret = {}
   Object.keys(raw).forEach((k) => {

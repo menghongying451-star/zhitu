@@ -14,14 +14,16 @@
  */
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import MarkdownIt from 'markdown-it'
-import { getAgentMeta, streamAgentChat } from '@/api/agent'
+import { getAgentMeta, getConversation, streamAgentChat } from '@/api/agent'
 
 const props = defineProps({
   agent: { type: String, required: true },
   inputs: { type: Object, default: () => ({}) },
   minHeight: { type: [Number, String], default: 600 },
   showTone: { type: Boolean, default: true },
-  title: { type: String, default: '' }
+  title: { type: String, default: '' },
+  // 从「历史对话」回来接着聊：传入会话 ID，组件会先加载这段对话
+  resumeId: { type: String, default: '' }
 })
 const emit = defineEmits(['action', 'loaded'])
 
@@ -63,7 +65,23 @@ async function loadMeta() {
     meta.opening = '智能体信息加载失败，请刷新页面重试。'
   }
   resetConversation()
+  if (props.resumeId) await resumeConversation(props.resumeId)
   emit('loaded', { agent: props.agent })
+}
+
+async function resumeConversation(id) {
+  try {
+    const { data } = await getConversation(id)
+    if (data?.agent !== props.agent) return
+    conversationId.value = data.id
+    messages.value = [
+      ...messages.value,
+      ...(data.messages || []).map((m) => ({ role: m.role, content: m.content }))
+    ]
+    scrollToBottom()
+  } catch {
+    // 会话已删除或不属于当前用户：当作新对话
+  }
 }
 
 function resetConversation() {

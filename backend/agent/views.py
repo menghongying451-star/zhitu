@@ -29,7 +29,8 @@ from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from . import conf, memory
+from . import conf, history, memory
+from .models import ChatConversation
 from .base import ChatContext
 from .documents import DocumentError
 from .llm import LLMError
@@ -102,6 +103,9 @@ class AgentChatView(APIView):
 
         user = request.user
         state = memory.load(agent.name, user.pk, conversation_id)
+        if not state.get("history") and data.get("conversation_id"):
+            # 缓存已过期（例如从「历史对话」回来接着聊）：从数据库恢复上下文
+            state["history"] = history.restore_history(agent.name, user, conversation_id)
         ctx = ChatContext(user=user, query=query, inputs=inputs, state=state,
                           conversation_id=conversation_id, file=upload)
         events = self._run(agent, ctx)
@@ -126,11 +130,13 @@ class AgentChatView(APIView):
     @staticmethod
     def _run(agent, ctx: ChatContext):
         yield {"type": "meta", "conversation_id": ctx.conversation_id, "agent": agent.name}
-        answer = []
+        answer, actions = [], []
         try:
             for ev in agent.run(ctx):
                 if ev.get("type") == "delta":
                     answer.append(ev["text"])
+                elif ev.get("type") == "action":
+                    actions.append({"name": ev.get("name"), "data": ev.get("data")})
                 yield ev
         except DocumentError as e:
             msg = str(e)
@@ -151,4 +157,64 @@ class AgentChatView(APIView):
             ctx.history.append({"role": "user", "content": user_text})
             ctx.history.append({"role": "assistant", "content": "".join(answer)[:4000]})
             memory.save(agent.name, ctx.user.pk, ctx.conversation_id, ctx.state)
+            history.record_turn(agent.name, ctx.user, ctx.conversation_id, ctx.inputs,
+                                user_text, "".join(answer)[:8000], actions)
         yield {"type": "done"}
+
+
+AGENT_TITLES = {"zhitu": "知途 · 方向测定与推荐", "wenshi": "文识 · 机会问答", "tianbao": "填宝 · 对话式发布"}
+
+
+def _conv_dict(c, with_messages=False):
+    d = {
+        "id": c.id,
+        "agent": c.agent,
+        "agent_title": AGENT_TITLES.get(c.agent, c.agent),
+        "title": c.title or "新对话",
+        "inputs": c.inputs,
+        "created_at": c.created_at.isoformat(),
+        "updated_at": c.updated_at.isoformat(),
+        "message_count": getattr(c, "message_count", None),
+    }
+    if with_messages:
+        msgs = list(c.messages.all())
+        d["message_count"] = len(msgs)
+        d["messages"] = [{"role": m.role, "content": m.content, "actions": m.actions,
+                          "created_at": m.created_at.isoformat()} for m in msgs]
+    return d
+
+
+class ConversationListView(APIView):
+    """GET 当前用户的会话列表（?agent=zhitu 可筛选）；DELETE 清空当前用户全部会话。"""
+
+    def get(self, request):
+        from django.db.models import Count
+        qs = ChatConversation.objects.filter(user=request.user).annotate(message_count=Count("messages"))
+        agent = request.query_params.get("agent")
+        if agent:
+            qs = qs.filter(agent=agent)
+        return Response([_conv_dict(c) for c in qs[:200]])
+
+    def delete(self, request):
+        n, _ = ChatConversation.objects.filter(user=request.user).delete()
+        return Response({"deleted": n})
+
+
+class ConversationDetailView(APIView):
+    """GET 单个会话的全部消息；DELETE 删除这个会话。只能访问自己的。"""
+
+    def _get(self, request, conv_id):
+        return ChatConversation.objects.filter(id=conv_id, user=request.user).first()
+
+    def get(self, request, conv_id):
+        c = self._get(request, conv_id)
+        if not c:
+            return Response({"detail": "对话不存在"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(_conv_dict(c, with_messages=True))
+
+    def delete(self, request, conv_id):
+        c = self._get(request, conv_id)
+        if not c:
+            return Response({"detail": "对话不存在"}, status=status.HTTP_404_NOT_FOUND)
+        c.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -1,116 +1,76 @@
 <script setup>
 /**
- * 历史对话（纯前端版本）
- *
- * 数据目前只存在浏览器 localStorage 里，第一次打开会写入几条演示会话。
- * 以后接后端时，把 load() / removeOne() / clearAll() 换成接口调用即可，
- * 页面结构不用动。
- *
- * 存储结构：
- *   [{ id, agent, title, createdAt, messages: [{ role: 'user' | 'assistant', content }] }]
+ * 历史对话：读取后端保存的智能体对话记录
+ *   GET    /api/v1/agent/conversations/          会话列表
+ *   GET    /api/v1/agent/conversations/<id>/     单个会话的全部消息
+ *   DELETE /api/v1/agent/conversations/<id>/     删除一个会话
+ *   DELETE /api/v1/agent/conversations/          清空全部
  */
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Delete, Timer } from '@element-plus/icons-vue'
+import {
+  listConversations,
+  getConversation,
+  deleteConversation,
+  clearConversations
+} from '@/api/agent'
 
-const STORAGE_KEY = 'zhitu_chat_history_v1'
-
-// 演示数据：等你接后端后删掉这段即可
-const DEMO_CONVERSATIONS = [
-  {
-    id: 'demo-1',
-    agent: 'zhitu',
-    title: '我是计算机专业的，想找 AI 方向的实习',
-    createdAt: Date.now() - 1000 * 60 * 35,
-    messages: [
-      { role: 'user', content: '我是计算机专业大二，想找和 AI 相关的实习，有什么推荐吗？' },
-      {
-        role: 'assistant',
-        content:
-          '从你的方向看，可以先关注两类机会：一是实验室的大模型/NLP 课题，门槛相对低、能积累科研经历；二是企业的算法实习岗，通常要求能稳定实习 3 个月以上。要不要我按「人工智能」这个领域帮你筛一下现在在招的机会？'
-      },
-      { role: 'user', content: '好，优先看北京市内的' },
-      {
-        role: 'assistant',
-        content:
-          '已经按「人工智能 + 北京」整理出 3 个方向：大模型算法研究助理、数据分析实习、算法工程实习生。前两个对本科在读更友好，第三个要求有 Python 工程经验。'
-      }
-    ]
-  },
-  {
-    id: 'demo-2',
-    agent: 'zhitu',
-    title: '大二可以参加哪些竞赛',
-    createdAt: Date.now() - 1000 * 60 * 60 * 26,
-    messages: [
-      { role: 'user', content: '大二可以参加哪些竞赛？我没什么项目经历。' },
-      {
-        role: 'assistant',
-        content:
-          '没有项目经历也不用担心，竞赛本身就是很好的起步方式。适合大二的有：数学建模（组队友好、周期短）、蓝桥杯（算法基础）、以及各类创新创业大赛（偏方案设计）。你想偏算法还是偏产品？我可以再帮你细分。'
-      }
-    ]
-  },
-  {
-    id: 'demo-3',
-    agent: 'zhitu',
-    title: '实验室招人一般看重什么',
-    createdAt: Date.now() - 1000 * 60 * 60 * 24 * 5,
-    messages: [
-      { role: 'user', content: '实验室招人一般看重什么？' },
-      {
-        role: 'assistant',
-        content:
-          '通常看三点：一是基础（数学、编程语言），二是能否投入稳定时间（每周到岗天数），三是有没有自学过的痕迹（课程设计、开源项目、竞赛）。招人的老师一般会优先问你「最近在学什么、做过什么」。'
-      }
-    ]
-  }
-]
-
-const conversations = ref([])
+const router = useRouter()
+const conversations = ref([]) // [{ id, agent, agent_title, title, createdAt, count }]
 const activeId = ref('')
+const detail = ref(null) // { ...会话, messages: [{ role, content }] }
+const loading = ref(false)
+const detailLoading = ref(false)
 
-const activeConversation = computed(
-  () => conversations.value.find((c) => c.id === activeId.value) || null
+const activeConversation = computed(() =>
+  detail.value && detail.value.id === activeId.value ? detail.value : null
 )
 
-// 按时间倒序展示
+// 按最后对话时间倒序（后端已排好，这里再保险一次）
 const sortedConversations = computed(() =>
-  [...conversations.value].sort((a, b) => b.createdAt - a.createdAt)
+  [...conversations.value].sort((a, b) => b.updatedAt - a.updatedAt)
 )
 
-function load() {
+async function load() {
+  loading.value = true
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed)) {
-        conversations.value = parsed
-      }
-    }
-  } catch {
-    // 存储损坏时退回演示数据
-    conversations.value = []
-  }
-
-  if (!conversations.value.length) {
-    conversations.value = DEMO_CONVERSATIONS.map((c) => ({ ...c, messages: [...c.messages] }))
-    persist()
-  }
-
-  activeId.value = sortedConversations.value[0]?.id || ''
-}
-
-function persist() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations.value))
-  } catch {
-    // 隐私模式/配额满时静默失败，不影响页面浏览
+    const { data } = await listConversations()
+    conversations.value = (Array.isArray(data) ? data : []).map((c) => ({
+      id: c.id,
+      agent: c.agent,
+      agentTitle: c.agent_title,
+      title: c.title,
+      createdAt: new Date(c.created_at).getTime(),
+      updatedAt: new Date(c.updated_at).getTime(),
+      count: c.message_count || 0
+    }))
+    if (sortedConversations.value.length) await selectConversation(sortedConversations.value[0].id)
+  } catch (err) {
+    ElMessage.error(err?.response?.data?.detail || '历史对话加载失败')
+  } finally {
+    loading.value = false
   }
 }
 
-function selectConversation(id) {
+async function selectConversation(id) {
   activeId.value = id
+  detailLoading.value = true
+  try {
+    const { data } = await getConversation(id)
+    if (activeId.value !== id) return // 用户已经点了别的
+    detail.value = { ...data, createdAt: new Date(data.created_at).getTime() }
+  } catch {
+    ElMessage.error('这条对话加载失败')
+  } finally {
+    detailLoading.value = false
+  }
+}
+
+function continueChat(item) {
+  // 目前只有知途支持从历史接着聊（文识需要先选中具体机会）
+  router.push({ path: '/student/project-requirement', query: { conv: item.id } })
 }
 
 async function removeOne(item) {
@@ -123,12 +83,18 @@ async function removeOne(item) {
   } catch {
     return // 用户取消
   }
-
+  try {
+    await deleteConversation(item.id)
+  } catch {
+    ElMessage.error('删除失败，请稍后重试')
+    return
+  }
   conversations.value = conversations.value.filter((c) => c.id !== item.id)
   if (activeId.value === item.id) {
-    activeId.value = sortedConversations.value[0]?.id || ''
+    detail.value = null
+    activeId.value = ''
+    if (sortedConversations.value.length) selectConversation(sortedConversations.value[0].id)
   }
-  persist()
   ElMessage.success('已删除')
 }
 
@@ -143,10 +109,15 @@ async function clearAll() {
   } catch {
     return
   }
-
+  try {
+    await clearConversations()
+  } catch {
+    ElMessage.error('清空失败，请稍后重试')
+    return
+  }
   conversations.value = []
   activeId.value = ''
-  persist()
+  detail.value = null
   ElMessage.success('已清空')
 }
 
@@ -187,16 +158,11 @@ onMounted(load)
       </el-button>
     </header>
 
-    <!-- 纯前端阶段：数据只在本机浏览器里 -->
-    <el-alert
-      class="local-tip"
-      type="info"
-      :closable="false"
-      show-icon
-      title="当前为本地演示数据，只保存在这台电脑的浏览器里，不会同步到其他设备"
-    />
+    <div v-if="loading" class="empty-wrap">
+      <el-empty description="加载中…" />
+    </div>
 
-    <div v-if="!conversations.length" class="empty-wrap">
+    <div v-else-if="!conversations.length" class="empty-wrap">
       <el-empty description="还没有对话记录，去「找机会」和智能体聊聊吧" />
     </div>
 
@@ -215,7 +181,7 @@ onMounted(load)
                 <el-icon><Timer /></el-icon>
                 {{ formatTime(item.createdAt) }}
               </span>
-              <span class="conv-count">{{ item.messages.length }} 条</span>
+              <span class="conv-count">{{ item.agentTitle }} · {{ item.count }} 条</span>
             </div>
           </button>
           <button class="conv-delete" title="删除这条对话" @click.stop="removeOne(item)">
@@ -225,11 +191,20 @@ onMounted(load)
       </aside>
 
       <!-- 右：对话内容 -->
-      <section class="conv-detail">
+      <section class="conv-detail" v-loading="detailLoading">
         <template v-if="activeConversation">
           <div class="detail-header">
             <h2 class="detail-title">{{ activeConversation.title }}</h2>
             <span class="detail-time">{{ formatTime(activeConversation.createdAt) }}</span>
+            <el-button
+              v-if="activeConversation.agent === 'zhitu'"
+              size="small"
+              type="primary"
+              plain
+              @click="continueChat(activeConversation)"
+            >
+              接着聊
+            </el-button>
           </div>
 
           <div class="messages">
